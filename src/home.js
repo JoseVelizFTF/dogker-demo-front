@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { navigate } from "@reach/router";
+import { v4 as uuidv4 } from "uuid";
 
 export const Home = ({ socket }) => {
-  const [roomCode, setRoomCode] = useState(null);
+  const initialRoomCode = uuidv4().substring(0, 6);
+  const [roomCode, setRoomCode] = useState(initialRoomCode);
   const [gameState, setGameState] = useState(null);
   const [username, setUsername] = useState("");
 
-  function startGame() {
-    console.log("Hello");
+  function createOrJoinRoom() {
     navigate(`/game/${roomCode}`, { state: { roomCode } });
-    socket.emit("startGame", roomCode);
+    socket.emit("createOrJoinRoom", roomCode);
   }
 
-  useEffect(() => {
-    setUsername(prompt("Ingresa tu nombre:"));
-    socket.emit("createGame");
-    socket.on("createGame", (data) => setRoomCode(data));
-    socket.on("sendRoomsToClient", (data) => console.log(data));
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <div>
-      <div>Hola {`${username}`}</div>
-      El codigo de tu sala de juego es: {roomCode}
       <div>
-        <button onClick={startGame}>Comenzar</button>
+        <span>Ingresa tu nombre:</span>
+        <input onChange={(e) => setUsername(e.target.value)} />
+      </div>
+      <br />
+      <div>
+        <span>Sala de juego:</span>
+        <input
+          onChange={(e) => setRoomCode(e.target.value)}
+          placeholder={roomCode}
+        />
+      </div>
+      <br />
+      <div>
+        <button onClick={createOrJoinRoom}>Entrar a la mesa</button>
       </div>
     </div>
   );
