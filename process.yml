@@ -1,0 +1,9 @@
+apps:
+  - script: "dogker-demo-front/node_modules/react-scripts/scripts/start.js"
+    name: "dogker-demo-front"
+    exec_mode: "cluster"
+    instances: 0
+    watch: false
+    combine_logs: true
+    env:
+      - PORT=8080
