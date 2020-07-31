@@ -13,7 +13,7 @@ export const Game = ({ location, socket }) => {
         console.log("call joinedRoom", room);
         setRoom(room);
       });
-  }, []);
+  }, [socket]);
 
   return (
     <div>

@@ -11,7 +11,7 @@ function App() {
   const [socketConnected, setSocketConnected] = useState(false);
 
   useEffect(() => {
-    setSocket(openSocket("http://54.214.108.187:3000"));
+    setSocket(openSocket(process.env.REACT_APP_BASE_URL));
   }, []);
 
   // subscribe to the socket event
