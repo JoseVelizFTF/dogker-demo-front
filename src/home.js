@@ -13,8 +13,6 @@ export const Home = ({ socket }) => {
     socket.emit("createOrJoinRoom", roomCode);
   }
 
-  useEffect(() => {}, []);
-
   return (
     <div>
       <div>
