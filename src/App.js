@@ -1,50 +1,44 @@
 import React, { useEffect, useState } from "react";
-import openSocket from "socket.io-client";
-// import "./App.css";
 import { Router, Link, Redirect } from "@reach/router";
 import { Home } from "./home";
 import { Game } from "./game";
-import { Status } from "./status";
+import { Logger } from "./Logger";
+
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 function App() {
   const [socket, setSocket] = useState(null);
-  const [socketConnected, setSocketConnected] = useState(false);
-
-  useEffect(() => {
-    setSocket(openSocket(process.env.REACT_APP_BASE_URL));
-  }, []);
-
-  // subscribe to the socket event
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("connect", () => {
-      setSocketConnected(socket.connected);
-    });
-    socket.on("disconnect", () => {
-      setSocketConnected(socket.connected);
-    });
-  }, [socket]);
-
-  // manage socket connection
-  const handleSocketConnection = () => {
-    if (socketConnected) socket.disconnect();
-    else {
-      socket.connect();
-    }
-  };
+  const [user, setUser] = useState(null);
+  const [gameCode, setGameCode] = useState(null);
 
   return (
     <div className="App">
       <Router>
-        <Home path="/" socket={socket}></Home>
-        <Game path="game/:id" socket={socket}></Game>
+        <Home
+          path="/"
+          setSocket={setSocket}
+          setUser={setUser}
+          user={user}
+          setGameCode={setGameCode}
+          gameCode={gameCode}
+          baseUrl={baseUrl}
+        ></Home>
+        <Game
+          gameCode={gameCode}
+          path="game/:id"
+          socket={socket}
+          user={user}
+          setSocket={setSocket}
+        ></Game>
       </Router>
       <hr />
-      <Status
-        handleSocketConnection={handleSocketConnection}
-        socketConnected={socketConnected}
-      />
+      <Logger />
+      <hr />
+      <pre>
+        <code>
+          userId -{">"} {sessionStorage.getItem("userId")}
+        </code>
+      </pre>
     </div>
   );
 }
