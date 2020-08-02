@@ -1,16 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { navigate } from "@reach/router";
-import { v4 as uuidv4 } from "uuid";
 
-export const Home = ({ socket }) => {
-  const initialRoomCode = uuidv4().substring(0, 6);
-  const [roomCode, setRoomCode] = useState(initialRoomCode);
+export const Home = ({ gameCode, setUser, user, setGameCode, baseUrl }) => {
   const [gameState, setGameState] = useState(null);
   const [username, setUsername] = useState("");
 
+  async function createOrUpdateUser(userId) {
+    const response = await fetch(`${baseUrl}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+    let { success = false, payload = null } = await response.json();
+    if (success) {
+      setUser(payload);
+      setGameCode(payload.code);
+      payload._id && sessionStorage.setItem("userId", payload._id);
+    } else {
+      console.error("Error en el servidor");
+    }
+  }
+
+  useEffect(() => {
+    const userId = sessionStorage.getItem("userId");
+    createOrUpdateUser(userId);
+  }, []);
+
   function createOrJoinRoom() {
-    navigate(`/game/${roomCode}`, { state: { roomCode } });
-    socket.emit("createOrJoinRoom", roomCode);
+    sessionStorage.setItem("username", username);
+    navigate(`/game/${gameCode}`, { state: { gameCode } });
   }
 
   return (
@@ -23,10 +43,12 @@ export const Home = ({ socket }) => {
       <div>
         <span>Sala de juego:</span>
         <input
-          onChange={(e) => setRoomCode(e.target.value)}
-          placeholder={roomCode}
+          onChange={(e) => setGameCode(e.target.value)}
+          placeholder={gameCode}
         />
       </div>
+      <br />
+      <div>Tu código de sala es: {user && user.code}</div>
       <br />
       <div>
         <button onClick={createOrJoinRoom}>Entrar a la mesa</button>

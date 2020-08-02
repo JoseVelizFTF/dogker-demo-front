@@ -1,38 +1,55 @@
 import React, { useState, useEffect } from "react";
+import { createSocket, getSocket } from "./api/socket";
+import { navigate } from "@reach/router";
 
-export const Game = ({ location, socket }) => {
+export const Game = ({ location, socket, setSocket, gameCode, user }) => {
   const [room, setRoom] = useState(null);
-  const userId = socket ? socket.io.engine.id : null;
-  console.log("userId", userId);
+
   function startGame() {
-    console.log("Game starting...");
+    socket.emit("startGame", { gameCode });
   }
+
+  function prepareSocket() {
+    createSocket();
+    const socket = getSocket();
+    setSocket(socket);
+    return socket;
+  }
+
+  useEffect(() => {
+    const socket = prepareSocket();
+
+    // socket.on("err", () => {
+    //   navigate("/");
+    // });
+    socket.emit("createOrJoinRoom", {
+      userId: sessionStorage.getItem("userId"),
+      gameCode: location.state.gameCode,
+    });
+  }, []);
+
   useEffect(() => {
     socket &&
-      socket.on("joinedRoom", ({ room }) => {
-        console.log("call joinedRoom", room);
-        setRoom(room);
+      socket.on("joinedRoom", (gameCode) => {
+        console.log("call joinedRoom", gameCode);
+        setRoom(gameCode);
       });
   }, [socket]);
 
   return (
     <div>
-      <div path="/game/:id">Juego: {location.state.roomCode}</div>
+      <div path="/game/:id">Juego: {location.state.gameCode}</div>
       <div>
-        {room !== null && room.owner === userId ? (
+        {room !== null && room.owner === sessionStorage.getItem("userId") ? (
           <button onClick={startGame}>Iniciar juego</button>
         ) : (
-          <span>
-            Esperar a que el host inicie la partida o se conecten más de 2
-            jugadores
-          </span>
+          <span>Esperar a que el host inicie la partida</span>
         )}
       </div>
       <pre>
         <div>
           Room -{">"} <code>{JSON.stringify(room, null, 2)}</code>
         </div>
-        <div>{`userId -> ${userId}`}</div>
       </pre>
     </div>
   );
