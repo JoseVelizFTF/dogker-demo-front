@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Router, Link, Redirect } from "@reach/router";
 import { Home } from "./home";
-import { Game } from "./game";
+import { Game } from "./game/Game";
 import { Logger } from "./Logger";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
