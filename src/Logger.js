@@ -30,10 +30,11 @@ export const Logger = () => {
               margin: "0.5rem",
               borderRadius: "10px",
               padding: "8px 0.5rem",
+              fontWeight: "600",
             }}
             key={idx}
           >
-            <b>Error:</b> {message}
+            Error: {message}
           </li>
         ))}
       </ul>
