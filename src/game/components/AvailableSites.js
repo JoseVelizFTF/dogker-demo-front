@@ -12,7 +12,7 @@ let buttonStyleSelected = {
   backgroundColor: "yellow",
 };
 
-export const Table = ({ socket, gameCode, room }) => {
+export const AvailableSites = ({ socket, gameCode, room }) => {
   const getButtonStyle = useCallback(
     (numberSite) => {
       const player =

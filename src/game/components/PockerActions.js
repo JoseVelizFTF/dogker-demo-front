@@ -1,17 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export const PockerActions = ({ socket }) => {
+export const PockerActions = ({ socket, gameCode, room }) => {
   const [bets, setBets] = useState([]);
-  const [showBetSection, setShowBetSection] = useState(true);
+  const [playerOptions, setPlayerOptions] = useState([]);
+  const [showBetSection, setShowBetSection] = useState(false);
 
-  function bet(amount) {
+  useEffect(() => {
+    setPlayerOptions(room.options);
+  }, [room]);
+
+  function addBet(amount) {
     setBets((bets) => [...bets, amount]);
   }
 
-  function sendBet() {
+  function bet() {
     let betAmount = bets.reduce((acc, curr) => acc + curr, 0);
-    console.log("sending to bet: ", betAmount);
-    socket && socket.emit("betting", betAmount);
+    socket &&
+      socket.emit("bet", {
+        userId: sessionStorage.getItem("userId"),
+        amount: betAmount,
+        gameCode,
+      });
+  }
+
+  function check() {
+    console.log("check");
+  }
+  function fold() {
+    console.log("fold");
+  }
+  // function call() {
+  //   socket.emit("bet", { gameCode, amount, userId });
+  // }
+  function raise() {
+    setShowBetSection(!showBetSection);
   }
 
   function removeBet(index) {
@@ -20,54 +42,144 @@ export const PockerActions = ({ socket }) => {
     setBets(array);
   }
 
+  function getCoinStyle(currency) {
+    let style = {
+      padding: "1rem",
+      borderRadius: "50%",
+      minWidth: "50px",
+      margin: " 0 1rem",
+    };
+    return style;
+  }
+
   return (
     <div>
-      <button
-        style={{ margin: "0.5rem 0", background: "gray", color: "white" }}
-        onClick={() => setShowBetSection(!showBetSection)}
-      >
-        Show/Hide
-      </button>
+      <h4>Es tu turno:</h4>
       {showBetSection ? (
         <>
-          <div style={{ display: "flex" }}>
-            <div>Apostar: </div>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(5)}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div>Monedas: </div>
+            <button style={getCoinStyle(5)} onClick={() => addBet(5)}>
               5
             </button>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(10)}>
+            <button style={getCoinStyle(10)} onClick={() => addBet(10)}>
               10
             </button>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(20)}>
+            <button style={getCoinStyle(20)} onClick={() => addBet(20)}>
               20
             </button>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(50)}>
+            <button style={getCoinStyle(50)} onClick={() => addBet(50)}>
               50
             </button>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(100)}>
+            <button style={getCoinStyle(100)} onClick={() => addBet(100)}>
               100
             </button>
-            <button style={{ margin: "0 0.5rem" }} onClick={() => bet(200)}>
+            <button style={getCoinStyle(200)} onClick={() => addBet(200)}>
               200
             </button>
           </div>
           <div>
-            <ul>
+            <ul style={{ display: "flex", listStyle: "none" }}>
               {bets.length > 0 &&
                 bets.map((bet, index) => (
-                  <li key={index} style={{ margin: "0.2rem 0" }}>
-                    {bet}
-                    <button onClick={() => removeBet(index)}>-</button>
-                  </li>
+                  <>
+                    <li key={index}>
+                      <button
+                        style={{
+                          ...getCoinStyle(bet),
+                          margin: "-0.6rem",
+                        }}
+                        onClick={() => removeBet(index)}
+                      >
+                        {bet}
+                      </button>
+                    </li>
+                  </>
                 ))}
             </ul>
-            <h3>Total: {bets.reduce((acc, curr) => acc + curr, 0)}</h3>
-            <button onClick={sendBet}>Apostar</button>
+            <h4>Apuesta mínima (RAISE/SUBIR): {room && room.actualMaxBet}</h4>
+            <h3>
+              Total:{" "}
+              {/* {bets.reduce((acc, curr) => acc + curr, room.actualMaxBet || 0)} */}
+              {bets.reduce((acc, curr) => acc + curr, 0)}
+            </h3>
+            <button
+              onClick={bet}
+              style={{
+                margin: "1rem 0",
+                background: "green",
+                color: "white",
+                padding: "1rem 1rem",
+              }}
+            >
+              Apostar
+            </button>
           </div>
         </>
       ) : (
         <div></div>
       )}
+      <div style={{ display: "flex" }}>
+        {room &&
+          room.options &&
+          room.options.length > 0 &&
+          room.options.map((opt, index) => {
+            let buttonLabel = null;
+            let disabled = false;
+            let action = () => {};
+            switch (opt) {
+              // case "call":
+              // buttonLabel = "Igualar";
+              // disabled = true;
+              // break;
+              case "raise":
+                buttonLabel = "Subir";
+                action = raise;
+                break;
+              case "fold":
+                buttonLabel = "Retirarse";
+                action = fold;
+                break;
+              case "check":
+                buttonLabel = "Pasar";
+                action = check;
+                break;
+              default:
+                break;
+            }
+
+            return buttonLabel ? (
+              <button
+                key={index}
+                disabled={disabled}
+                onClick={action}
+                style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
+              >
+                {buttonLabel}
+              </button>
+            ) : (
+              <></>
+            );
+          })}
+        {/* <button
+          onClick={() => setShowBetSection(!showBetSection)}
+          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
+        >
+          Apostar
+        </button>
+        <button
+          onClick={check}
+          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
+        >
+          Pasar
+        </button>
+        <button
+          onClick={fold}
+          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
+        >
+          Retirarse
+        </button> */}
+      </div>
       <hr />
     </div>
   );

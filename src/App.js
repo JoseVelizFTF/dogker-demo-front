@@ -13,6 +13,11 @@ function App() {
 
   return (
     <div className="App">
+      <pre>
+        <code>
+          Jugador -{">"} {sessionStorage.getItem("userId")}
+        </code>
+      </pre>
       <Router>
         <Home
           path="/"
@@ -34,11 +39,6 @@ function App() {
       <hr />
       <Logger />
       <hr />
-      <pre>
-        <code>
-          userId -{">"} {sessionStorage.getItem("userId")}
-        </code>
-      </pre>
     </div>
   );
 }
