@@ -27,7 +27,11 @@ export const PockerActions = ({ socket, gameCode, room }) => {
     console.log("check");
   }
   function fold() {
-    console.log("fold");
+    socket &&
+      socket.emit("fold", {
+        userId: sessionStorage.getItem("userId"),
+        gameCode,
+      });
   }
   // function call() {
   //   socket.emit("bet", { gameCode, amount, userId });
@@ -82,19 +86,17 @@ export const PockerActions = ({ socket, gameCode, room }) => {
             <ul style={{ display: "flex", listStyle: "none" }}>
               {bets.length > 0 &&
                 bets.map((bet, index) => (
-                  <>
-                    <li key={index}>
-                      <button
-                        style={{
-                          ...getCoinStyle(bet),
-                          margin: "-0.6rem",
-                        }}
-                        onClick={() => removeBet(index)}
-                      >
-                        {bet}
-                      </button>
-                    </li>
-                  </>
+                  <li key={index}>
+                    <button
+                      style={{
+                        ...getCoinStyle(bet),
+                        margin: "-0.6rem",
+                      }}
+                      onClick={() => removeBet(index)}
+                    >
+                      {bet}
+                    </button>
+                  </li>
                 ))}
             </ul>
             <h4>Apuesta mínima (RAISE/SUBIR): {room && room.actualMaxBet}</h4>
