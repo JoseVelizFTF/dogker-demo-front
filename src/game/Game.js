@@ -12,6 +12,7 @@ let styleCardInside = {
 export const Game = ({ location, socket, setSocket, gameCode, user }) => {
   const [room, setRoom] = useState(null);
   const [player, setPlayer] = useState(null);
+  const [betAmount, setBetAmount] = useState(0);
 
   useEffect(() => {
     room &&
@@ -20,6 +21,8 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
           (player) => player._id === sessionStorage.getItem("userId")
         )
       );
+
+    room && player && setBetAmount(room.actualMaxBet - player.betAmount);
   }, [room]);
 
   function startGame() {
@@ -58,22 +61,6 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
     <div>
       <hr />
       <div path="/game/:id">Juego: {location.state.gameCode}</div>
-      {room && room.gameStarted && player && player.turn && (
-        <div
-          style={{
-            background: "darkblue",
-            color: "white",
-            padding: "1rem",
-            border: "1px solid white",
-            fontWeight: 600,
-            borderRadius: "15px",
-            margin: "2rem 0",
-            textAlign: "center",
-          }}
-        >
-          ES TU TURNO
-        </div>
-      )}
       <div>
         <div>
           {room && room.round ? (
@@ -92,10 +79,71 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                       backgroundColor: "darkgreen",
                       padding: "1rem 0",
                       borderRadius: "20px",
+                      position: "relative",
                     }}
                   >
-                    <div style={{ backgroundColor: "darkgreen" }}>
-                      💰{player && player.betAmount}
+                    {room && room.gameStarted && player && player.turn && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          background: "blue",
+                          borderRadius: "10px",
+                          border: "2px solid white",
+                          top: -15,
+                          right: 10,
+                          // margin: "0.2rem",
+                          // marginBottom: "-0.5rem 0.5rem",
+                          padding: "0.5rem 1rem",
+                        }}
+                      >
+                        T
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        backgroundColor: "darkgreen",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <span
+                        style={{
+                          background: "green",
+                          borderRadius: "15px",
+                          padding: "0.5rem 1rem",
+                        }}
+                      >
+                        💵 {room && room.totalBetAmount}
+                      </span>
+                      <span
+                        style={{
+                          background: "darkgreen",
+                          borderRadius: "15px",
+                          padding: "0.5rem 1rem",
+                        }}
+                      >
+                        {room &&
+                          room.players.map((p) => {
+                            let sty = {
+                              background: "darkgreen",
+                              fontSize: "0.8rem",
+                            };
+                            let isyou = p._id === player._id;
+                            if (isyou) {
+                              sty = {
+                                background: "yellow",
+                                color: "black",
+                                fontSize: "1rem",
+                              };
+                            }
+                            return (
+                              <div style={sty}>
+                                <span style={sty}>👨🏻💰</span>
+                                <span style={sty}>{p.betAmount}</span>
+                              </div>
+                            );
+                          })}
+                      </span>
                     </div>
                     <div
                       style={{
@@ -109,9 +157,7 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                           marginRight: "0.5rem",
                           backgroundColor: "darkgreen",
                         }}
-                      >
-                        Cards:
-                      </span>
+                      ></span>
                       {player &&
                         player.cards &&
                         player.cards.length > 0 &&
@@ -145,7 +191,14 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                           );
                         })}
                     </div>
-                    <div>
+                    <div
+                      style={{
+                        opacity: room && room.hand.length > 0 ? 1 : 0,
+                        background: "red",
+                        padding: "1rem 0.2rem",
+                        borderRadius: "20px",
+                      }}
+                    >
                       {room && room.hand && room.hand.length > 0 ? (
                         room.hand.map((card) => {
                           const value = card.split("-")[0];
@@ -156,9 +209,9 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                               <button
                                 style={{
                                   background: "white",
-                                  fontSize: "1.5rem",
-                                  padding: "2rem 0.4rem",
-                                  width: "80px",
+                                  fontSize: "1.2rem",
+                                  padding: "1.5rem 0.4rem",
+                                  width: "60px",
                                   margin: "0 0.2rem",
                                 }}
                               >

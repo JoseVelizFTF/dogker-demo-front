@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from "react";
 
 export const PockerActions = ({ socket, gameCode, room }) => {
-  const [bets, setBets] = useState([]);
   const [playerOptions, setPlayerOptions] = useState([]);
   const [showBetSection, setShowBetSection] = useState(false);
+  const [betAmount, setBetAmount] = useState(0);
 
   useEffect(() => {
     setPlayerOptions(room.options);
   }, [room]);
 
-  function addBet(amount) {
-    setBets((bets) => [...bets, amount]);
-  }
-
   function bet() {
-    let betAmount = bets.reduce((acc, curr) => acc + curr, 0);
     socket &&
       socket.emit("bet", {
         userId: sessionStorage.getItem("userId"),
@@ -23,9 +18,6 @@ export const PockerActions = ({ socket, gameCode, room }) => {
       });
   }
 
-  function check() {
-    console.log("check");
-  }
   function fold() {
     socket &&
       socket.emit("fold", {
@@ -33,89 +25,47 @@ export const PockerActions = ({ socket, gameCode, room }) => {
         gameCode,
       });
   }
-  // function call() {
-  //   socket.emit("bet", { gameCode, amount, userId });
-  // }
+
   function raise() {
     setShowBetSection(!showBetSection);
   }
 
-  function removeBet(index) {
-    var array = [...bets]; // make a separate copy of the array
-    array.splice(index, 1);
-    setBets(array);
-  }
-
-  function getCoinStyle(currency) {
-    let style = {
-      padding: "1rem",
-      borderRadius: "50%",
-      minWidth: "50px",
-      margin: " 0 1rem",
-    };
-    return style;
-  }
-
   return (
     <div>
-      <h4>Es tu turno:</h4>
       {showBetSection ? (
         <>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div>Monedas: </div>
-            <button style={getCoinStyle(5)} onClick={() => addBet(5)}>
-              5
-            </button>
-            <button style={getCoinStyle(10)} onClick={() => addBet(10)}>
-              10
-            </button>
-            <button style={getCoinStyle(20)} onClick={() => addBet(20)}>
-              20
-            </button>
-            <button style={getCoinStyle(50)} onClick={() => addBet(50)}>
-              50
-            </button>
-            <button style={getCoinStyle(100)} onClick={() => addBet(100)}>
-              100
-            </button>
-            <button style={getCoinStyle(200)} onClick={() => addBet(200)}>
-              200
-            </button>
-          </div>
           <div>
-            <ul style={{ display: "flex", listStyle: "none" }}>
-              {bets.length > 0 &&
-                bets.map((bet, index) => (
-                  <li key={index}>
-                    <button
-                      style={{
-                        ...getCoinStyle(bet),
-                        margin: "-0.6rem",
-                      }}
-                      onClick={() => removeBet(index)}
-                    >
-                      {bet}
-                    </button>
-                  </li>
-                ))}
-            </ul>
-            <h4>Apuesta mínima (RAISE/SUBIR): {room && room.actualMaxBet}</h4>
-            <h3>
-              Total:{" "}
-              {/* {bets.reduce((acc, curr) => acc + curr, room.actualMaxBet || 0)} */}
-              {bets.reduce((acc, curr) => acc + curr, 0)}
-            </h3>
-            <button
-              onClick={bet}
-              style={{
-                margin: "1rem 0",
-                background: "green",
-                color: "white",
-                padding: "1rem 1rem",
-              }}
-            >
-              Apostar
-            </button>
+            <h4>Apuesta mínima: {room && room.actualMaxBet}</h4>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <h3>
+                <span>Total: </span>
+                <input
+                  type="text"
+                  onChange={(e) => setBetAmount(e.target.value)}
+                  placeholder={room && room.actualMaxBet}
+                  style={{
+                    backgroundColor: "white",
+                    padding: "0.2rem 0.5rem",
+                    color: "black",
+                    fontSize: "1.2rem",
+                    width: "70px",
+                    height: "30px",
+                    marginRight: "1rem",
+                  }}
+                />
+              </h3>
+              <button
+                onClick={bet}
+                style={{
+                  margin: "0.2rem 0",
+                  background: "green",
+                  color: "white",
+                  padding: "0.5rem 0.8rem",
+                }}
+              >
+                Apostar
+              </button>
+            </div>
           </div>
         </>
       ) : (
@@ -130,10 +80,6 @@ export const PockerActions = ({ socket, gameCode, room }) => {
             let disabled = false;
             let action = () => {};
             switch (opt) {
-              // case "call":
-              // buttonLabel = "Igualar";
-              // disabled = true;
-              // break;
               case "raise":
                 buttonLabel = "Subir";
                 action = raise;
@@ -144,7 +90,7 @@ export const PockerActions = ({ socket, gameCode, room }) => {
                 break;
               case "check":
                 buttonLabel = "Pasar";
-                action = check;
+                action = bet;
                 break;
               default:
                 break;
@@ -163,24 +109,6 @@ export const PockerActions = ({ socket, gameCode, room }) => {
               <></>
             );
           })}
-        {/* <button
-          onClick={() => setShowBetSection(!showBetSection)}
-          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
-        >
-          Apostar
-        </button>
-        <button
-          onClick={check}
-          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
-        >
-          Pasar
-        </button>
-        <button
-          onClick={fold}
-          style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
-        >
-          Retirarse
-        </button> */}
       </div>
       <hr />
     </div>

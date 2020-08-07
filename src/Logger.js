@@ -8,7 +8,7 @@ export const Logger = () => {
     const setIntervalId = setInterval(() => {
       messages.length > 0 &&
         setMessages(messages.splice(0, messages.length - 1));
-    }, 3000);
+    }, 2000);
     return () => clearInterval(setIntervalId);
   });
 
@@ -20,8 +20,23 @@ export const Logger = () => {
   }, [socket]);
 
   return (
-    <div>
-      <ul style={{ textDecoration: "none", padding: 0, margin: 0 }}>
+    <div
+      style={{
+        display: "fixed",
+        position: "absolute",
+        top: 0,
+        right: 0,
+        background: "",
+      }}
+    >
+      <ul
+        style={{
+          textDecoration: "none",
+          padding: 0,
+          margin: 0,
+          backgroundColor: "transparent",
+        }}
+      >
         {messages.reverse().map((message, idx) => (
           <li
             style={{
