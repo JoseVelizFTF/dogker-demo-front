@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export const PockerActions = ({ socket, gameCode, room }) => {
+export const PockerActions = ({ socket, gameCode, room, location }) => {
   const [playerOptions, setPlayerOptions] = useState([]);
   const [showBetSection, setShowBetSection] = useState(false);
   const [betAmount, setBetAmount] = useState(0);
@@ -22,7 +22,7 @@ export const PockerActions = ({ socket, gameCode, room }) => {
     socket &&
       socket.emit("fold", {
         userId: sessionStorage.getItem("userId"),
-        gameCode,
+        gameCode: gameCode || location.state.gameCode,
       });
   }
 

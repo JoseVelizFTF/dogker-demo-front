@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 
 let buttonStyle = {
   border: "0.5px solid white",
@@ -12,7 +12,7 @@ let buttonStyleSelected = {
   backgroundColor: "yellow",
 };
 
-export const Table = ({ socket, gameCode, room }) => {
+export const Table = ({ socket, gameCode, room, location }) => {
   const getButtonStyle = useCallback(
     (numberSite) => {
       const player =
@@ -31,7 +31,7 @@ export const Table = ({ socket, gameCode, room }) => {
     const objToSend = {
       userId: sessionStorage.getItem("userId"),
       numberSite,
-      gameCode,
+      gameCode: gameCode || location.state.gameCode,
     };
     socket.emit("setPlayerSite", objToSend);
   }

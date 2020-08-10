@@ -7,12 +7,18 @@ let buttonStyle = {
   margin: "0 0.5rem",
   padding: "1rem 1rem",
 };
+
 let buttonStyleSelected = {
   ...buttonStyle,
   backgroundColor: "yellow",
 };
+let buttonStyleReserved = {
+  ...buttonStyle,
+  backgroundColor: "red",
+  color: "white",
+};
 
-export const AvailableSites = ({ socket, gameCode, room }) => {
+export const AvailableSites = ({ socket, gameCode, room, location }) => {
   const getButtonStyle = useCallback(
     (numberSite) => {
       const player =
@@ -31,7 +37,7 @@ export const AvailableSites = ({ socket, gameCode, room }) => {
     const objToSend = {
       userId: sessionStorage.getItem("userId"),
       numberSite,
-      gameCode,
+      gameCode: gameCode || location.state.gameCode,
     };
     socket.emit("setPlayerSite", objToSend);
   }
