@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { navigate } from "@reach/router";
 
-export const Home = ({ gameCode, setUser, user, setGameCode, baseUrl }) => {
+export const Home = ({
+  gameCode,
+  setUser,
+  user,
+  setGameCode,
+  baseUrl,
+  setUsername,
+  username,
+}) => {
   const [gameState, setGameState] = useState(null);
-  const [username, setUsername] = useState("");
 
   async function createOrUpdateUser(userId) {
     const response = await fetch(`${baseUrl}/users`, {

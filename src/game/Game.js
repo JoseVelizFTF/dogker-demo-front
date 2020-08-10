@@ -9,7 +9,14 @@ let styleCardInside = {
   color: "black",
 };
 
-export const Game = ({ location, socket, setSocket, gameCode, user }) => {
+export const Game = ({
+  location,
+  socket,
+  setSocket,
+  gameCode,
+  username,
+  avatarId = 0,
+}) => {
   const [room, setRoom] = useState(null);
   const [player, setPlayer] = useState(null);
   const [betAmount, setBetAmount] = useState(0);
@@ -23,10 +30,10 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
       );
 
     room && player && setBetAmount(room.actualMaxBet - player.betAmount);
-  }, [room]);
+  }, [room, player]);
 
   function startGame() {
-    socket.emit("startGame", { gameCode });
+    socket.emit("startGame", { gameCode: gameCode || location.state.gameCode });
   }
 
   function prepareSocket() {
@@ -38,10 +45,11 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
 
   useEffect(() => {
     const socket = prepareSocket();
-
     socket.emit("createOrJoinRoom", {
       userId: sessionStorage.getItem("userId"),
       gameCode: location.state.gameCode,
+      username,
+      avatarId,
     });
   }, []);
 
@@ -91,8 +99,6 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                           border: "2px solid white",
                           top: -15,
                           right: 10,
-                          // margin: "0.2rem",
-                          // marginBottom: "-0.5rem 0.5rem",
                           padding: "0.5rem 1rem",
                         }}
                       >
@@ -123,7 +129,7 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                         }}
                       >
                         {room &&
-                          room.players.map((p) => {
+                          room.players.map((p, index) => {
                             let sty = {
                               background: "darkgreen",
                               fontSize: "0.8rem",
@@ -137,8 +143,21 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                               };
                             }
                             return (
-                              <div style={sty}>
-                                <span style={sty}>👨🏻💰</span>
+                              <div style={sty} key={index}>
+                                <span style={sty}>
+                                  <span role="img" aria-label="money">
+                                    💵
+                                  </span>
+                                  {p.chips}|
+                                </span>
+                                <span style={sty}>
+                                  {p.name || (
+                                    <span role="img" aria-label="money">
+                                      👨🏻
+                                    </span>
+                                  )}
+                                  |💰
+                                </span>
                                 <span style={sty}>{p.betAmount}</span>
                               </div>
                             );
@@ -161,12 +180,13 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                       {player &&
                         player.cards &&
                         player.cards.length > 0 &&
-                        player.cards.map((card) => {
+                        player.cards.map((card, index) => {
                           const value = card.split("-")[0];
                           const type = card.split("-")[1];
 
                           return (
                             <button
+                              key={index}
                               style={{
                                 background: "white",
                                 fontSize: "1.5rem",
@@ -200,12 +220,12 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                       }}
                     >
                       {room && room.hand && room.hand.length > 0 ? (
-                        room.hand.map((card) => {
+                        room.hand.map((card, index) => {
                           const value = card.split("-")[0];
                           const type = card.split("-")[1];
 
                           return (
-                            <>
+                            <div key={index}>
                               <button
                                 style={{
                                   background: "white",
@@ -228,7 +248,7 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
                                   "🔥"
                                 )}
                               </button>
-                            </>
+                            </div>
                           );
                         })
                       ) : (
@@ -259,11 +279,21 @@ export const Game = ({ location, socket, setSocket, gameCode, user }) => {
             ))}
 
           {room && room.gameStarted && player && player.turn && (
-            <PockerActions socket={socket} gameCode={gameCode} room={room} />
+            <PockerActions
+              socket={socket}
+              gameCode={gameCode}
+              room={room}
+              location={location}
+            />
           )}
         </div>
         {room && !room.gameStarted && (
-          <AvailableSites socket={socket} gameCode={gameCode} room={room} />
+          <AvailableSites
+            socket={socket}
+            gameCode={gameCode}
+            room={room}
+            location={location}
+          />
         )}
       </div>
       <hr />

@@ -10,6 +10,7 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [user, setUser] = useState(null);
   const [gameCode, setGameCode] = useState(null);
+  const [username, setUsername] = useState("");
 
   return (
     <div className="App">
@@ -26,6 +27,8 @@ function App() {
           user={user}
           setGameCode={setGameCode}
           gameCode={gameCode}
+          setUsername={setUsername}
+          username={username}
           baseUrl={baseUrl}
         ></Home>
         <Game
@@ -34,6 +37,8 @@ function App() {
           socket={socket}
           user={user}
           setSocket={setSocket}
+          username={username}
+          avatarId={null || 0}
         ></Game>
       </Router>
       <hr />
