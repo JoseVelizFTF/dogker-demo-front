@@ -14,7 +14,7 @@ export const PockerActions = ({ socket, gameCode, room, location }) => {
       socket.emit("bet", {
         userId: sessionStorage.getItem("userId"),
         amount: betAmount,
-        gameCode,
+        gameCode: gameCode || location.state.gameCode,
       });
   }
 

@@ -20,7 +20,9 @@ export const Game = ({
   const [room, setRoom] = useState(null);
   const [player, setPlayer] = useState(null);
   const [betAmount, setBetAmount] = useState(0);
-
+  const gameCodeFromUrl = location.state
+    ? location.state.gameCode
+    : location.href.split("/").pop();
   useEffect(() => {
     room &&
       setPlayer(
@@ -33,7 +35,7 @@ export const Game = ({
   }, [room, player]);
 
   function startGame() {
-    socket.emit("startGame", { gameCode: gameCode || location.state.gameCode });
+    socket.emit("startGame", { gameCode: gameCodeFromUrl });
   }
 
   function prepareSocket() {
@@ -47,7 +49,7 @@ export const Game = ({
     const socket = prepareSocket();
     socket.emit("createOrJoinRoom", {
       userId: sessionStorage.getItem("userId"),
-      gameCode: location.state.gameCode,
+      gameCode: gameCodeFromUrl,
       username,
       avatarId,
     });
@@ -68,7 +70,7 @@ export const Game = ({
   return (
     <div>
       <hr />
-      <div path="/game/:id">Juego: {location.state.gameCode}</div>
+      <div>Juego: {gameCodeFromUrl}</div>
       <div>
         <div>
           {room && room.round ? (
@@ -130,6 +132,7 @@ export const Game = ({
                       >
                         {room &&
                           room.players.map((p, index) => {
+                            let styTurn = {};
                             let sty = {
                               background: "darkgreen",
                               fontSize: "0.8rem",
@@ -139,11 +142,20 @@ export const Game = ({
                               sty = {
                                 background: "yellow",
                                 color: "black",
+                                // fontSize: "1rem",
+                              };
+                            }
+                            let isTurn = p.turn;
+                            if (isTurn) {
+                              styTurn = {
+                                ...sty,
+                                // background: "red",
+                                border: "5px solid red",
                                 fontSize: "1rem",
                               };
                             }
                             return (
-                              <div style={sty} key={index}>
+                              <div style={{ ...sty, ...styTurn }} key={index}>
                                 <span style={sty}>
                                   <span role="img" aria-label="money">
                                     💵
@@ -159,6 +171,14 @@ export const Game = ({
                                   |💰
                                 </span>
                                 <span style={sty}>{p.betAmount}</span>
+                                <span style={sty}>
+                                  {" "}
+                                  {p.dealer && <span style={sty}>🅳</span>}
+                                </span>
+                                <span style={sty}>
+                                  {" "}
+                                  {p.isAgressor && <span style={sty}>🔥</span>}
+                                </span>
                               </div>
                             );
                           })}
@@ -281,7 +301,7 @@ export const Game = ({
           {room && room.gameStarted && player && player.turn && (
             <PockerActions
               socket={socket}
-              gameCode={gameCode}
+              gameCode={gameCodeFromUrl}
               room={room}
               location={location}
             />
@@ -290,7 +310,7 @@ export const Game = ({
         {room && !room.gameStarted && (
           <AvailableSites
             socket={socket}
-            gameCode={gameCode}
+            gameCode={gameCodeFromUrl}
             room={room}
             location={location}
           />
