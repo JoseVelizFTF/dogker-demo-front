@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { createSocket, getSocket } from "../api/socket";
-import { navigate } from "@reach/router";
 import { PockerActions } from "./components/PockerActions";
 import { AvailableSites } from "./components/AvailableSites";
-
-let styleCardInside = {
-  backgroundColor: "white",
-  color: "black",
-};
+import { ShowCards } from "./components/ShowCards";
 
 export const Game = ({
   location,
@@ -23,6 +18,7 @@ export const Game = ({
   const gameCodeFromUrl = location.state
     ? location.state.gameCode
     : location.href.split("/").pop();
+
   useEffect(() => {
     room &&
       setPlayer(
@@ -30,7 +26,9 @@ export const Game = ({
           (player) => player._id === sessionStorage.getItem("userId")
         )
       );
+  }, [room]);
 
+  useEffect(() => {
     room && player && setBetAmount(room.actualMaxBet - player.betAmount);
   }, [room, player]);
 
@@ -71,12 +69,49 @@ export const Game = ({
     <div>
       <hr />
       <div>Juego: {gameCodeFromUrl}</div>
+      {player && player.winner ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            color: "white",
+            background: "black",
+            fontSize: "3rem",
+          }}
+        >
+          G A N A D O R
+        </div>
+      ) : (
+        <></>
+      )}
+      <div>
+        {player && player.bestHand && player.bestHand.length > 0 ? (
+          <ShowCards
+            styleComponent={{
+              display: "flex",
+              justifyContent: "space-around",
+              background: player && player.winner ? "yellow" : "gray",
+              padding: "1rem 0.2rem",
+              borderRadius: "20px",
+            }}
+            styleCards={{
+              fontSize: "1rem",
+              padding: "1.2rem 0.4rem",
+              width: "50px",
+              margin: "0 0.2rem",
+            }}
+            cards={player && player.bestHand != null ? player.bestHand : []}
+          />
+        ) : (
+          <></>
+        )}
+      </div>
       <div>
         <div>
           {room && room.round ? (
             <>
               <h3>
-                ROUND: <span>{room.round.toUpperCase()}</span>
+                Round: <span>{room.round.toUpperCase()}</span>
               </h3>
               <h4>
                 {player && player.cards && player.cards.length > 0 ? (
@@ -154,6 +189,13 @@ export const Game = ({
                                 fontSize: "1rem",
                               };
                             }
+                            if (p.cards.length === 0) {
+                              sty = {
+                                ...sty,
+                                background: "gray",
+                                color: "gray",
+                              };
+                            }
                             return (
                               <div style={{ ...sty, ...styTurn }} key={index}>
                                 <span style={sty}>
@@ -184,97 +226,32 @@ export const Game = ({
                           })}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        backgroundColor: "darkgreen",
-                      }}
-                    >
-                      <span
-                        style={{
-                          marginRight: "0.5rem",
+                    {player && player.cards && player.cards.length > 0 && (
+                      <ShowCards
+                        styleComponent={{
+                          display: "flex",
+                          alignItems: "center",
                           backgroundColor: "darkgreen",
                         }}
-                      ></span>
-                      {player &&
-                        player.cards &&
-                        player.cards.length > 0 &&
-                        player.cards.map((card, index) => {
-                          const value = card.split("-")[0];
-                          const type = card.split("-")[1];
-
-                          return (
-                            <button
-                              key={index}
-                              style={{
-                                background: "white",
-                                fontSize: "1.5rem",
-                                padding: "2rem 0.4rem",
-                                width: "80px",
-                                margin: "0 0.2rem",
-                              }}
-                            >
-                              <span style={styleCardInside}>{value}</span>
-                              {type === "h" ? (
-                                <span style={styleCardInside}>❤</span>
-                              ) : type === "c" ? (
-                                <span style={styleCardInside}>♣️</span>
-                              ) : type === "s" ? (
-                                <span style={styleCardInside}>♠</span>
-                              ) : type === "d" ? (
-                                <span style={styleCardInside}>♦️</span>
-                              ) : (
-                                "🔥"
-                              )}
-                            </button>
-                          );
-                        })}
-                    </div>
-                    <div
-                      style={{
-                        opacity: room && room.hand.length > 0 ? 1 : 0,
-                        background: "red",
-                        padding: "1rem 0.2rem",
-                        borderRadius: "20px",
-                      }}
-                    >
-                      {room && room.hand && room.hand.length > 0 ? (
-                        room.hand.map((card, index) => {
-                          const value = card.split("-")[0];
-                          const type = card.split("-")[1];
-
-                          return (
-                            <div key={index}>
-                              <button
-                                style={{
-                                  background: "white",
-                                  fontSize: "1.2rem",
-                                  padding: "1.5rem 0.4rem",
-                                  width: "60px",
-                                  margin: "0 0.2rem",
-                                }}
-                              >
-                                <span style={styleCardInside}>{value}</span>
-                                {type === "h" ? (
-                                  <span style={styleCardInside}>❤</span>
-                                ) : type === "c" ? (
-                                  <span style={styleCardInside}>♣️</span>
-                                ) : type === "s" ? (
-                                  <span style={styleCardInside}>♠</span>
-                                ) : type === "d" ? (
-                                  <span style={styleCardInside}>♦️</span>
-                                ) : (
-                                  "🔥"
-                                )}
-                              </button>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div></div>
-                      )}
-                    </div>
+                        cards={player.cards}
+                      />
+                    )}
+                    {room && room.hand && room.hand.length > 0 && (
+                      <ShowCards
+                        styleComponent={{
+                          background: "red",
+                          padding: "1rem 0.2rem",
+                          borderRadius: "20px",
+                        }}
+                        styleCards={{
+                          fontSize: "1rem",
+                          padding: "1.2rem 0.4rem",
+                          width: "50px",
+                          margin: "0 0.2rem",
+                        }}
+                        cards={room.hand}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div></div>
@@ -304,6 +281,7 @@ export const Game = ({
               gameCode={gameCodeFromUrl}
               room={room}
               location={location}
+              player={player}
             />
           )}
         </div>

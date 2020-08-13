@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export const PockerActions = ({ socket, gameCode, room, location }) => {
+export const PockerActions = ({ socket, gameCode, room, location, player }) => {
   const [playerOptions, setPlayerOptions] = useState([]);
   const [showBetSection, setShowBetSection] = useState(false);
   const [betAmount, setBetAmount] = useState(0);
@@ -10,10 +10,16 @@ export const PockerActions = ({ socket, gameCode, room, location }) => {
   }, [room]);
 
   function bet() {
+    let value = Boolean(+betAmount)
+      ? +betAmount
+      : +room.actualMaxBet - +player.betAmount;
+    console.log(value);
     socket &&
       socket.emit("bet", {
         userId: sessionStorage.getItem("userId"),
-        amount: betAmount,
+        amount: Boolean(+betAmount)
+          ? +betAmount
+          : +room.actualMaxBet - +player.betAmount,
         gameCode: gameCode || location.state.gameCode,
       });
   }
@@ -26,63 +32,46 @@ export const PockerActions = ({ socket, gameCode, room, location }) => {
       });
   }
 
-  function raise() {
-    setShowBetSection(!showBetSection);
-  }
-
   return (
     <div>
-      {showBetSection ? (
-        <>
-          <div>
-            <h4>Apuesta mínima: {room && room.actualMaxBet}</h4>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <h3>
-                <span>Total: </span>
-                <input
-                  type="text"
-                  onChange={(e) => setBetAmount(e.target.value)}
-                  placeholder={room && room.actualMaxBet}
-                  style={{
-                    backgroundColor: "white",
-                    padding: "0.2rem 0.5rem",
-                    color: "black",
-                    fontSize: "1.2rem",
-                    width: "70px",
-                    height: "30px",
-                    marginRight: "1rem",
-                  }}
-                />
-              </h3>
-              <button
-                onClick={bet}
-                style={{
-                  margin: "0.2rem 0",
-                  background: "green",
-                  color: "white",
-                  padding: "0.5rem 0.8rem",
-                }}
-              >
-                Apostar
-              </button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div></div>
-      )}
+      <div>
+        {/* <h4>Apuesta mínima: {room && room.actualMaxBet}</h4> */}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <h3>
+            <span>Total de apuesta: </span>
+            <input
+              type="text"
+              onChange={(e) => setBetAmount(e.target.value)}
+              placeholder={
+                room && player && room.actualMaxBet - player.betAmount
+              }
+              style={{
+                backgroundColor: "white",
+                padding: "0.2rem 0.5rem",
+                color: "black",
+                fontSize: "1.2rem",
+                width: "70px",
+                height: "30px",
+                marginRight: "1rem",
+              }}
+            />
+          </h3>
+        </div>
+      </div>
       <div style={{ display: "flex" }}>
         {room &&
           room.options &&
           room.options.length > 0 &&
           room.options.map((opt, index) => {
             let buttonLabel = null;
+            let sty = { marginRight: "1rem", padding: ".5rem 1rem" };
             let disabled = false;
             let action = () => {};
             switch (opt) {
               case "raise":
-                buttonLabel = "Subir";
-                action = raise;
+                buttonLabel = "Apostar";
+                sty = { ...sty, background: "green", color: "white" };
+                action = bet;
                 break;
               case "fold":
                 buttonLabel = "Retirarse";
@@ -101,7 +90,7 @@ export const PockerActions = ({ socket, gameCode, room, location }) => {
                 key={index}
                 disabled={disabled}
                 onClick={action}
-                style={{ marginRight: "1rem", padding: ".5rem 1rem" }}
+                style={sty}
               >
                 {buttonLabel}
               </button>
