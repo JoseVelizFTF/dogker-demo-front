@@ -8,13 +8,11 @@ export const Game = ({
   location,
   socket,
   setSocket,
-  gameCode,
   username,
   avatarId = 0,
 }) => {
   const [room, setRoom] = useState(null);
   const [player, setPlayer] = useState(null);
-  const [betAmount, setBetAmount] = useState(0);
   const gameCodeFromUrl = location.state
     ? location.state.gameCode
     : location.href.split("/").pop();
@@ -27,10 +25,6 @@ export const Game = ({
         )
       );
   }, [room]);
-
-  useEffect(() => {
-    room && player && setBetAmount(room.actualMaxBet - player.betAmount);
-  }, [room, player]);
 
   function startGame() {
     socket.emit("startGame", { gameCode: gameCodeFromUrl });
@@ -84,6 +78,17 @@ export const Game = ({
       ) : (
         <></>
       )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          color: "white",
+          fontSize: "1.2rem",
+          fontWeight: 500,
+        }}
+      >
+        {player ? player.handRankLabel : ""}
+      </div>
       <div>
         {player && player.bestHand && player.bestHand.length > 0 ? (
           <ShowCards
@@ -111,7 +116,8 @@ export const Game = ({
           {room && room.round ? (
             <>
               <h3>
-                Round: <span>{room.round.toUpperCase()}</span>
+                Round: <span>{room.round.toUpperCase()}</span> -{" "}
+                <span>{room.roundIndex}</span>
               </h3>
               <h4>
                 {player && player.cards && player.cards.length > 0 ? (

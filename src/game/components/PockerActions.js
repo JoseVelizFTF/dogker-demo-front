@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 export const PockerActions = ({ socket, gameCode, room, location, player }) => {
-  const [playerOptions, setPlayerOptions] = useState([]);
-  const [showBetSection, setShowBetSection] = useState(false);
   const [betAmount, setBetAmount] = useState(0);
-
-  useEffect(() => {
-    setPlayerOptions(room.options);
-  }, [room]);
 
   function bet() {
     let value = Boolean(+betAmount)
@@ -35,7 +29,6 @@ export const PockerActions = ({ socket, gameCode, room, location, player }) => {
   return (
     <div>
       <div>
-        {/* <h4>Apuesta mínima: {room && room.actualMaxBet}</h4> */}
         <div style={{ display: "flex", alignItems: "center" }}>
           <h3>
             <span>Total de apuesta: </span>
