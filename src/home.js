@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { navigate } from "@reach/router";
 
 export const Home = ({
@@ -10,7 +10,15 @@ export const Home = ({
   setUsername,
   username,
 }) => {
-  const [gameState, setGameState] = useState(null);
+  const registerEvent = (event) => {
+    const f = (event) => {
+      if (event.key === "Enter") {
+        createOrJoinRoom();
+      }
+    };
+    document.addEventListener("keydown", f);
+    return f;
+  };
 
   async function createOrUpdateUser(userId) {
     const response = await fetch(`${baseUrl}/users`, {
@@ -33,9 +41,14 @@ export const Home = ({
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
     createOrUpdateUser(userId);
+    const f = registerEvent();
+    return () => {
+      document.removeEventListener("keydown", f);
+    };
   }, []);
 
   function createOrJoinRoom() {
+    console.log("gameCode", gameCode);
     sessionStorage.setItem("username", username);
     navigate(`/game/${gameCode}`, { state: { gameCode } });
   }
